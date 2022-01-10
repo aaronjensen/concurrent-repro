@@ -5,8 +5,12 @@ require "concurrent-ruby"
 def run
   return to_enum(__method__) unless block_given?
 
+  executor = :fast
+  # This works
+  # executor = :immediate
+
   promises = [
-    Concurrent::Promise.execute(executor: :fast) do
+    Concurrent::Promise.execute(executor: executor) do
       yield "some-value"
     end
   ]
