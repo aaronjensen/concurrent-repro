@@ -1,11 +1,24 @@
 ENV["BUNDLE_GEMFILE"] ||= File.expand_path("./Gemfile", __dir__)
 require "bundler/setup"
-require "sprockets"
+require "concurrent-ruby"
 
-environment = Sprockets::Environment.new(Dir.pwd)
-environment.append_path(".")
+def run
+  return to_enum(__method__) unless block_given?
 
-manifest = Sprockets::Manifest.new(environment, "./manifest.js")
-manifest.find_sources("application.css").first
+  promises = [
+    Concurrent::Promise.execute(executor: :fast) do
+      yield "some-value"
+    end
+  ]
+  promises.each(&:wait!)
+
+  nil
+end
+
+# This does not work
+run.first
+
+# This works
+# run.to_a.first
 
 puts "It worked"
